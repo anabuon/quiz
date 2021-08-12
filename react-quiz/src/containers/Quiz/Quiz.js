@@ -2,6 +2,8 @@ import React, { Component } from 'react'
 import classes from './Quiz.module.scss'
 import ActiveQuiz from '../../components/ActiveQuiz/ActiveQuiz'
 import FinishedQuiz from '../../components/FinishedQuiz/FinishedQuiz'
+import axios from '../../axios/axios-quiz'
+import Loader from '../../components/UI/Loader/Loader'
 
 class Quiz extends Component {
   state = {
@@ -9,30 +11,32 @@ class Quiz extends Component {
     activeQuestion: 0,
     answerState: null, //{[id]: 'succes' 'error'}
     isFinished: false,
-    quiz: [
-      {
-        question: 'Какой метод любого React компонента вызывается первым?',
-        id: 1,
-        rightAnswerId: 2,
-        answers: [
-          { text: 'componentWillMount', id: 1 },
-          { text: 'constructor', id: 2 },
-          { text: 'componentDidMount', id: 3 },
-          { text: 'render', id: 4 },
-        ],
-      },
-      {
-        question: 'Какой атрибут обязателен при рендеринге компонентов списка?',
-        id: 2,
-        rightAnswerId: 1,
-        answers: [
-          { text: 'key', id: 1 },
-          { text: 'index', id: 2 },
-          { text: 'data-index', id: 3 },
-          { text: 'id', id: 4 },
-        ],
-      },
-    ],
+    quiz: [],
+    loading: true,
+    //[
+    //   {
+    //     question: 'Какой метод любого React компонента вызывается первым?',
+    //     id: 1,
+    //     rightAnswerId: 2,
+    //     answers: [
+    //       { text: 'componentWillMount', id: 1 },
+    //       { text: 'constructor', id: 2 },
+    //       { text: 'componentDidMount', id: 3 },
+    //       { text: 'render', id: 4 },
+    //     ],
+    //   },
+    //   {
+    //     question: 'Какой атрибут обязателен при рендеринге компонентов списка?',
+    //     id: 2,
+    //     rightAnswerId: 1,
+    //     answers: [
+    //       { text: 'key', id: 1 },
+    //       { text: 'index', id: 2 },
+    //       { text: 'data-index', id: 3 },
+    //       { text: 'id', id: 4 },
+    //     ],
+    //   },
+    // ],
   }
 
   onAnswerClickHandler = (answerId) => {
@@ -94,13 +98,30 @@ class Quiz extends Component {
     return this.state.activeQuestion + 1 === this.state.quiz.length
   }
 
+  async componentDidMount() {
+    try {
+      const response = await axios.get(
+        `/quizes/${this.props.match.params.id}.json`
+      )
+      const quiz = response.data
+      this.setState({
+        quiz,
+        loading: false,
+      })
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
   render() {
     return (
       <div className={classes.Quiz}>
         <div className={classes.QuizWrapper}>
           <h1>Quiz</h1>
 
-          {this.state.isFinished ? (
+          {this.state.loading ? (
+            <Loader />
+          ) : this.state.isFinished ? (
             <FinishedQuiz
               results={this.state.results}
               quiz={this.state.quiz}
